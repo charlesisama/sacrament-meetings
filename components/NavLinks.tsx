@@ -20,9 +20,9 @@ export default function NavLinks() {
             {navigationLinks.map((link) => {
                 const isActive =
                     pathname === link.href ||
-                    (link.href !== "/" &&
-                        pathname.startsWith(`${link.href}/`));
-
+                    (link.href === "/meetings" &&
+                        pathname.startsWith("/meetings/") &&
+                        pathname !== "/meetings/current");
                 return (
                     <Link
                         key={link.href}

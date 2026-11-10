@@ -233,10 +233,22 @@ export function getMeetingsByType(
 /**
  * Retrieves the most recent meeting dated today or earlier.
  */
-export function getCurrentMeeting(): SacramentMeeting | undefined {
-    const today = new Date().toISOString().split("T")[0];
 
-    return meetings
-        .filter((meeting) => meeting.date <= today)
-        .sort((a, b) => b.date.localeCompare(a.date))[0];
+export function getCurrentMeeting(): SacramentMeeting | undefined {
+    const today = new Date();
+
+    // Calculate the date of this week's Sunday.
+    const sunday = new Date(today);
+    sunday.setHours(0, 0, 0, 0);
+    sunday.setDate(sunday.getDate() + (7 - sunday.getDay()) % 7);
+
+    // Format the Sunday date as YYYY-MM-DD.
+    const targetDate = [
+        sunday.getFullYear(),
+        String(sunday.getMonth() + 1).padStart(2, "0"),
+        String(sunday.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    return meetings.find((meeting) => meeting.date === targetDate);
 }
+
