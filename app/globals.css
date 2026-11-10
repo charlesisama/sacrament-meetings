@@ -24,3 +24,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Meeting program print styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .site-header,
+  .site-footer,
+  .meeting-print-button {
+    display: none !important;
+  }
+
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+
+  article {
+    border: none !important;
+    box-shadow: none !important;
+  }
+}
