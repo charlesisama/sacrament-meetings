@@ -22,7 +22,7 @@ export default function Footer() {
                     </Link>
 
                     <p className="mt-2">
-                        ©  2026 Sacrament Meeting Planner
+                        Charles Isama ©  2026 Sacrament Meeting Planner
                     </p>
                 </div>
             </div>
