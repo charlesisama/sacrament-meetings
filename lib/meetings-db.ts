@@ -195,6 +195,36 @@ export async function getMeetingsByType(
 }
 
 
+
+export async function getMeetingsByDate(
+    date: string
+): Promise<SacramentMeeting[]> {
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        WHERE date = ${date}
+        ORDER BY date DESC, id DESC
+    `;
+
+    return (rows as MeetingRow[]).map(mapMeeting);
+}
+
+
+
 export async function getCurrentMeeting(): Promise<
     SacramentMeeting | undefined
 > {

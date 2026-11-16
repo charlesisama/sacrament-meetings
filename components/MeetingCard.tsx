@@ -22,6 +22,7 @@ export default function MeetingCard({
         regular: "Regular Meeting",
         stake: "Stake Meeting",
         general: "General Meeting",
+        special: "Special Meeting",
     }[meeting.meetingType];
 
     return (
