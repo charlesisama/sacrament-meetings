@@ -4,10 +4,9 @@ import { redirect } from "next/navigation";
 import { getCurrentMeeting } from "@/lib/meetings-db";
 
 export default async function CurrentMeetingPage() {
-    // Wait for an incoming request before using the current date.
     await connection();
 
-    const meeting = getCurrentMeeting();
+    const meeting = await getCurrentMeeting();
 
     if (!meeting) {
         return (
@@ -15,7 +14,6 @@ export default async function CurrentMeetingPage() {
                 <h1 className="mb-3 text-2xl font-bold text-slate-900">
                     No Current Meeting
                 </h1>
-
                 <p className="text-slate-600">
                     No meeting is scheduled for the current Sunday.
                 </p>

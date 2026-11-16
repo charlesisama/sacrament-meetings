@@ -10,12 +10,9 @@ export async function GET(
     _request: Request,
     { params }: RouteContext
 ) {
-    // Extract the ID from the dynamic route.
     const { id } = await params;
-
     const meetingId = Number(id);
 
-    // Validate the ID.
     if (!Number.isSafeInteger(meetingId) || meetingId <= 0) {
         return NextResponse.json(
             { error: "Invalid meeting ID." },
@@ -23,10 +20,8 @@ export async function GET(
         );
     }
 
-    // Find the requested meeting.
-    const meeting = getMeetingById(meetingId);
+    const meeting = await getMeetingById(meetingId);
 
-    // Handle a meeting that does not exist.
     if (!meeting) {
         return NextResponse.json(
             { error: "Meeting not found." },
@@ -34,6 +29,5 @@ export async function GET(
         );
     }
 
-    // Return the requested meeting.
     return NextResponse.json(meeting);
 }

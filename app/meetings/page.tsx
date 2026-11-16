@@ -2,8 +2,8 @@
 import MeetingCard from "@/components/MeetingCard";
 import { getAllMeetings } from "@/lib/meetings-db";
 
-export default function MeetingsPage() {
-    const meetings = getAllMeetings();
+export default async function MeetingsPage() {
+    const meetings = await getAllMeetings();
 
     const sortedMeetings = [...meetings].sort((a, b) =>
         b.date.localeCompare(a.date)
@@ -15,11 +15,9 @@ export default function MeetingsPage() {
                 <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
                     Meeting Records
                 </p>
-
                 <h1 className="mb-3 text-3xl font-bold text-slate-900">
                     All Meetings
                 </h1>
-
                 <p className="text-slate-600">
                     Browse meeting agendas and review previous programs.
                 </p>

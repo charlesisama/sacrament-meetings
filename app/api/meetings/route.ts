@@ -13,16 +13,15 @@ const validMeetingTypes: MeetingType[] = [
     "general",
 ];
 
-export function GET(request: Request) {
+export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get("type");
 
-    // No type filter: return every meeting.
     if (type === null) {
-        return NextResponse.json(getAllMeetings());
+        const meetings = await getAllMeetings();
+        return NextResponse.json(meetings);
     }
 
-    // Reject unsupported meeting types.
     if (!validMeetingTypes.includes(type as MeetingType)) {
         return NextResponse.json(
             {
@@ -33,8 +32,7 @@ export function GET(request: Request) {
         );
     }
 
-    // Return meetings matching the requested type.
-    const meetings = getMeetingsByType(type as MeetingType);
+    const meetings = await getMeetingsByType(type as MeetingType);
 
     return NextResponse.json(meetings);
 }

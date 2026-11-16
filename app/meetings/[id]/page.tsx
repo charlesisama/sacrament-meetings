@@ -9,7 +9,6 @@ interface MeetingPageProps {
     params: Promise<{ id: string }>;
 }
 
-// This component handles the asynchronous route parameter.
 async function MeetingPageContent({ params }: MeetingPageProps) {
     const { id } = await params;
     const meetingId = Number(id);
@@ -18,7 +17,7 @@ async function MeetingPageContent({ params }: MeetingPageProps) {
         notFound();
     }
 
-    const meeting = getMeetingById(meetingId);
+    const meeting = await getMeetingById(meetingId);
 
     if (!meeting) {
         notFound();
@@ -40,7 +39,6 @@ async function MeetingPageContent({ params }: MeetingPageProps) {
     );
 }
 
-// The Suspense boundary handles the asynchronous route data.
 export default function MeetingPage({ params }: MeetingPageProps) {
     return (
         <Suspense
