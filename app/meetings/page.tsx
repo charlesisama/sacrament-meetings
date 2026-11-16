@@ -1,13 +1,32 @@
 
+import { Suspense } from "react";
 import MeetingCard from "@/components/MeetingCard";
-import { getAllMeetings } from "@/lib/meetings-db";
+import MeetingSearch from "@/components/MeetingSearch";
+import Pagination from "@/components/Pagination";
+import {
+    getMeetings,
+    getMeetingsTotalPages,
+} from "@/lib/meetings-db";
 
-export default async function MeetingsPage() {
-    const meetings = await getAllMeetings();
+type MeetingsPageProps = {
+    searchParams: Promise<{
+        query?: string;
+        page?: string;
+    }>;
+};
 
-    const sortedMeetings = [...meetings].sort((a, b) =>
-        b.date.localeCompare(a.date)
-    );
+export default async function MeetingsPage({
+    searchParams,
+}: MeetingsPageProps) {
+    const params = await searchParams;
+
+    const query = params.query ?? "";
+    const currentPage = Math.max(1, Number(params.page) || 1);
+
+    const [meetings, totalPages] = await Promise.all([
+        getMeetings(query, currentPage),
+        getMeetingsTotalPages(query),
+    ]);
 
     return (
         <section>
@@ -23,13 +42,23 @@ export default async function MeetingsPage() {
                 </p>
             </div>
 
-            {sortedMeetings.length === 0 ? (
+            <Suspense
+                fallback={
+                    <div className="mb-6 h-12 animate-pulse rounded-lg bg-gray-100" />
+                }
+            >
+                <MeetingSearch />
+            </Suspense>
+
+            {meetings.length === 0 ? (
                 <p className="rounded-xl bg-white p-6 text-slate-600">
-                    No meeting records are available.
+                    {query
+                        ? `No meetings found matching "${query}". Try another search.`
+                        : "No meeting records are available."}
                 </p>
             ) : (
                 <div className="grid gap-6 md:grid-cols-2">
-                    {sortedMeetings.map((meeting) => (
+                    {meetings.map((meeting) => (
                         <MeetingCard
                             key={meeting.id}
                             meeting={meeting}
@@ -37,6 +66,13 @@ export default async function MeetingsPage() {
                     ))}
                 </div>
             )}
+
+            <Suspense fallback={null}>
+                <Pagination
+                    totalPages={totalPages}
+                    currentPage={currentPage}
+                />
+            </Suspense>
         </section>
     );
 }
