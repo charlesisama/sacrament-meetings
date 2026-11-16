@@ -1,254 +1,180 @@
 
-import type { SacramentMeeting } from './types';
+import { sql } from "@/lib/db";
+import type {
+    SacramentMeeting,
+    Hymn,
+    SpeakerItem,
+    WardBusinessItem,
+} from "./types";
+
+type MeetingRow = {
+    id: number;
+    date: string;
+    meeting_type: SacramentMeeting["meetingType"];
+    presiding: string;
+    conducting: string;
+    announcements: string[] | null;
+    opening_hymn: Hymn;
+    opening_prayer: string;
+    ward_business: WardBusinessItem[];
+    stake_business: boolean;
+    sacrament_hymn: Hymn;
+    speakers: SpeakerItem[];
+    closing_hymn: Hymn;
+    closing_prayer: string;
+};
 
 /**
- * Temporary in-memory sacrament meeting database.
+ * Converts a PostgreSQL row into our TypeScript meeting model.
  */
-const meetings: SacramentMeeting[] = [
-    {
-        id: 1,
-        date: "2026-11-01",
-        meetingType: "testimony",
-        presiding: "Bishop James Anderson",
-        conducting: "Brother Michael Brown",
-        announcements: [
-            "Ward temple trip scheduled for November 14.",
-            "Youth activity holds on Friday at 5 PM."
-        ],
-        openingHymn: {
-            number: 2,
-            title: "The Spirit of God"
-        },
-        openingPrayer: "Brother David Johnson",
-        wardBusiness: [
-            {
-                description: "Sustaining of new ward Sunday School teachers."
-            }
-        ],
-        stakeBusiness: false,
-        sacramentHymn: {
-            number: 169,
-            title: "As Now We Take the Sacrament"
-        },
-        speakers: [
-            {
-                name: "Sister Mary Williams",
-                topic: "Personal Testimony of Jesus Christ",
-                type: "speaker"
-            },
-            {
-                name: "Brother Daniel Smith",
-                topic: "Faith in the Savior",
-                type: "speaker"
-            }
-        ],
-        closingHymn: {
-            number: 301,
-            title: "I Am a Child of God"
-        },
-        closingPrayer: "Brother Peter Wilson"
-    },
-    {
-        id: 2,
-        date: "2026-11-08",
-        meetingType: "regular",
-        presiding: "Bishop James Anderson",
-        conducting: "Brother Michael Brown",
-        announcements: [
-            "Stake conference preparation meeting next Sunday."
-        ],
-        openingHymn: {
-            number: 19,
-            title: "We Thank Thee, O God, for a Prophet"
-        },
-        openingPrayer: "Brother Samuel Davis",
-        wardBusiness: [
-            {
-                description: "Presentation of the ward missionary report."
-            }
-        ],
-        stakeBusiness: true,
-        sacramentHymn: {
-            number: 181,
-            title: "Jesus of Nazareth, Savior and King"
-        },
-        speakers: [
-            {
-                name: "Sister Grace Taylor",
-                topic: "The Importance of Family Prayer",
-                type: "speaker"
-            },
-            {
-                name: "Brother John Clark",
-                topic: "Strengthening Our Faith",
-                type: "speaker"
-            }
-        ],
-        closingHymn: {
-            number: 85,
-            title: "How Firm a Foundation"
-        },
-        closingPrayer: "Brother Andrew Thomas"
-    },
-    {
-        id: 3,
-        date: "2026-11-15",
-        meetingType: "stake",
-        presiding: "President Robert Miller",
-        conducting: "President Daniel White",
-        announcements: [
-            "Stake leadership meeting at 2 PM."
-        ],
-        openingHymn: {
-            number: 27,
-            title: "Praise to the Lord, the Almighty"
-        },
-        openingPrayer: "Elder Joseph Harris",
-        wardBusiness: [],
-        stakeBusiness: true,
-        sacramentHymn: {
-            number: 174,
-            title: "While of These Emblems We Partake"
-        },
-        speakers: [
-            {
-                name: "President Robert Miller",
-                topic: "Building Stronger Wards",
-                type: "speaker"
-            }
-        ],
-        closingHymn: {
-            number: 85,
-            title: "How Firm a Foundation"
-        },
-        closingPrayer: "Sister Elizabeth Moore"
-    },
-    {
-        id: 4,
-        date: "2026-11-22",
-        meetingType: "regular",
-        presiding: "Bishop James Anderson",
-        conducting: "Brother Michael Brown",
-        announcements: [
-            "Thanksgiving service preparations."
-        ],
-        openingHymn: {
-            number: 3,
-            title: "Now Let Us Rejoice"
-        },
-        openingPrayer: "Brother Matthew Lewis",
-        wardBusiness: [
-            {
-                description: "Ward welfare and service updates."
-            }
-        ],
-        stakeBusiness: false,
-        sacramentHymn: {
-            number: 188,
-            title: "Thy Will, O Lord, Be Done"
-        },
-        speakers: [
-            {
-                name: "Sister Anna Robinson",
-                topic: "Gratitude in All Things",
-                type: "speaker"
-            },
-            {
-                name: "Brother Daniel Smith",
-                topic: "Serving One Another",
-                type: "speaker"
-            }
-        ],
-        closingHymn: {
-            number: 100,
-            title: "Nearer, My God, to Thee"
-        },
-        closingPrayer: "Brother David Johnson"
-    },
-    {
-        id: 5,
-        date: "2026-11-29",
-        meetingType: "general",
-        presiding: "President Robert Miller",
-        conducting: "President Daniel White",
-        announcements: [
-            "Special leadership training follows the meeting."
-        ],
-        openingHymn: {
-            number: 87,
-            title: "God Is Love"
-        },
-        openingPrayer: "Elder Joseph Harris",
-        wardBusiness: [],
-        stakeBusiness: true,
-        sacramentHymn: {
-            number: 193,
-            title: "I Stand All Amazed"
-        },
-        speakers: [
-            {
-                name: "Sister Grace Taylor",
-                topic: "Following the Example of Jesus Christ",
-                type: "speaker"
-            },
-            {
-                name: "Choir",
-                topic: "Come, Follow Me",
-                type: "musical-number"
-            }
-        ],
-        closingHymn: {
-            number: 98,
-            title: "I Need Thee Every Hour"
-        },
-        closingPrayer: "Brother Peter Wilson"
-    }
-];
+function mapMeeting(row: MeetingRow): SacramentMeeting {
+    return {
+        id: row.id,
+        date: row.date,
+        meetingType: row.meeting_type,
+        presiding: row.presiding,
+        conducting: row.conducting,
+        announcements: row.announcements ?? undefined,
+        openingHymn: row.opening_hymn,
+        openingPrayer: row.opening_prayer,
+        wardBusiness: row.ward_business,
+        stakeBusiness: row.stake_business,
+        sacramentHymn: row.sacrament_hymn,
+        speakers: row.speakers,
+        closingHymn: row.closing_hymn,
+        closingPrayer: row.closing_prayer,
+    };
+}
 
 /**
  * Retrieves all sacrament meeting records.
  */
-export function getAllMeetings(): SacramentMeeting[] {
-    return meetings;
+export async function getAllMeetings(): Promise<SacramentMeeting[]> {
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        ORDER BY date DESC, id DESC
+    `;
+
+    return (rows as MeetingRow[]).map(mapMeeting);
 }
 
 /**
  * Retrieves a meeting using its unique ID.
  */
-export function getMeetingById(id: number): SacramentMeeting | undefined {
-    return meetings.find((meeting) => meeting.id === id);
+export async function getMeetingById(
+    id: number
+): Promise<SacramentMeeting | undefined> {
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        WHERE id = ${id}
+        LIMIT 1
+    `;
+
+    const row = (rows as MeetingRow[])[0];
+
+    return row ? mapMeeting(row) : undefined;
 }
 
 /**
  * Retrieves meetings belonging to a specific meeting type.
  */
-export function getMeetingsByType(
+export async function getMeetingsByType(
     meetingType: SacramentMeeting["meetingType"]
-): SacramentMeeting[] {
-    return meetings.filter(
-        (meeting) => meeting.meetingType === meetingType
-    );
+): Promise<SacramentMeeting[]> {
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        WHERE meeting_type = ${meetingType}
+        ORDER BY date DESC, id DESC
+    `;
+
+    return (rows as MeetingRow[]).map(mapMeeting);
 }
 
 /**
- * Retrieves the most recent meeting dated today or earlier.
+ * Retrieves the meeting scheduled for the current Sunday.
  */
-
-export function getCurrentMeeting(): SacramentMeeting | undefined {
+export async function getCurrentMeeting(): Promise<
+    SacramentMeeting | undefined
+> {
     const today = new Date();
 
-    // Calculate the date of this week's Sunday.
     const sunday = new Date(today);
     sunday.setHours(0, 0, 0, 0);
     sunday.setDate(sunday.getDate() + (7 - sunday.getDay()) % 7);
 
-    // Format the Sunday date as YYYY-MM-DD.
     const targetDate = [
         sunday.getFullYear(),
         String(sunday.getMonth() + 1).padStart(2, "0"),
         String(sunday.getDate()).padStart(2, "0"),
     ].join("-");
 
-    return meetings.find((meeting) => meeting.date === targetDate);
-}
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        WHERE date = ${targetDate}::date
+        LIMIT 1
+    `;
 
+    const row = (rows as MeetingRow[])[0];
+
+    return row ? mapMeeting(row) : undefined;
+}
