@@ -24,6 +24,8 @@ type MeetingRow = {
     closing_prayer: string;
 };
 
+const MEETINGS_PER_PAGE = 5;
+
 /**
  * Converts a PostgreSQL row into our TypeScript meeting model.
  */
@@ -73,9 +75,68 @@ export async function getAllMeetings(): Promise<SacramentMeeting[]> {
     return (rows as MeetingRow[]).map(mapMeeting);
 }
 
-/**
- * Retrieves a meeting using its unique ID.
- */
+
+export async function getMeetings(
+    query = "",
+    currentPage = 1
+): Promise<SacramentMeeting[]> {
+    const searchQuery = query.trim();
+    const page = Math.max(1, Math.floor(currentPage) || 1);
+    const offset = (page - 1) * MEETINGS_PER_PAGE;
+
+    const rows = await sql`
+        SELECT
+            id,
+            date::text AS date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        FROM meetings
+        WHERE
+            ${searchQuery} = ''
+            OR presiding ILIKE ${'%' + searchQuery + '%'}
+            OR conducting ILIKE ${'%' + searchQuery + '%'}
+            OR meeting_type ILIKE ${'%' + searchQuery + '%'}
+            OR speakers::text ILIKE ${'%' + searchQuery + '%'}
+        ORDER BY date DESC, id DESC
+        LIMIT ${MEETINGS_PER_PAGE}
+        OFFSET ${offset}
+    `;
+
+    return (rows as MeetingRow[]).map(mapMeeting);
+}
+
+
+export async function getMeetingsTotalPages(
+    query = ""
+): Promise<number> {
+    const searchQuery = query.trim();
+
+    const rows = await sql`
+        SELECT COUNT(*)::int AS total
+        FROM meetings
+        WHERE
+            ${searchQuery} = ''
+            OR presiding ILIKE ${'%' + searchQuery + '%'}
+            OR conducting ILIKE ${'%' + searchQuery + '%'}
+            OR meeting_type ILIKE ${'%' + searchQuery + '%'}
+            OR speakers::text ILIKE ${'%' + searchQuery + '%'}
+    `;
+
+    const total = (rows as { total: number }[])[0]?.total ?? 0;
+
+    return Math.ceil(total / MEETINGS_PER_PAGE);
+}
+
 export async function getMeetingById(
     id: number
 ): Promise<SacramentMeeting | undefined> {
@@ -105,9 +166,7 @@ export async function getMeetingById(
     return row ? mapMeeting(row) : undefined;
 }
 
-/**
- * Retrieves meetings belonging to a specific meeting type.
- */
+
 export async function getMeetingsByType(
     meetingType: SacramentMeeting["meetingType"]
 ): Promise<SacramentMeeting[]> {
@@ -135,9 +194,7 @@ export async function getMeetingsByType(
     return (rows as MeetingRow[]).map(mapMeeting);
 }
 
-/**
- * Retrieves the meeting scheduled for the current Sunday.
- */
+
 export async function getCurrentMeeting(): Promise<
     SacramentMeeting | undefined
 > {
@@ -177,4 +234,28 @@ export async function getCurrentMeeting(): Promise<
     const row = (rows as MeetingRow[])[0];
 
     return row ? mapMeeting(row) : undefined;
+}
+
+
+export async function addMeeting(
+    data: Omit<SacramentMeeting, "id">
+): Promise<void> {
+    void data;
+    throw new Error("Adding meetings will be implemented in Week 04.");
+}
+
+
+export async function updateMeeting(
+    id: number,
+    updates: Partial<Omit<SacramentMeeting, "id">>
+): Promise<void> {
+    void id;
+    void updates;
+    throw new Error("Updating meetings will be implemented in Week 04.");
+}
+
+
+export async function deleteMeeting(id: number): Promise<void> {
+    void id;
+    throw new Error("Deleting meetings will be implemented in Week 04.");
 }

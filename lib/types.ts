@@ -6,7 +6,8 @@ export type MeetingType =
     | "testimony"
     | "regular"
     | "stake"
-    | "general";
+    | "general"
+    | "special";
 
 /**
  * Represents a hymn used during a meeting.

@@ -1,30 +1,48 @@
 
 import { NextResponse } from "next/server";
 import { connection } from "next/server";
-import { sql } from "@/lib/db";
+import {
+    getMeetings,
+    getMeetingsTotalPages,
+} from "@/lib/meetings-db";
 
 export async function GET() {
     await connection();
 
     try {
-        const result = await sql`
-            SELECT
-                NOW() AS current_time,
-                current_database() AS database_name
-        `;
+        const [page1, page2, searchResults, totalPages] =
+            await Promise.all([
+                getMeetings("", 1),
+                getMeetings("", 2),
+                getMeetings("smith", 1),
+                getMeetingsTotalPages(""),
+            ]);
 
         return NextResponse.json({
             success: true,
-            message: "Neon PostgreSQL connection successful!",
-            data: result[0],
+            tests: {
+                firstPage: {
+                    count: page1.length,
+                    ids: page1.map((meeting) => meeting.id),
+                },
+                secondPage: {
+                    count: page2.length,
+                    ids: page2.map((meeting) => meeting.id),
+                },
+                searchSmith: {
+                    count: searchResults.length,
+                    ids: searchResults.map((meeting) => meeting.id),
+                },
+                totalPages,
+            },
         });
     } catch (error) {
-        console.error("Database connection failed:", error);
+        console.error("Database test failed:", error);
 
         return NextResponse.json(
             {
                 success: false,
-                message: "Database connection failed.",
+                message: "Database test failed.",
             },
             { status: 500 }
         );
