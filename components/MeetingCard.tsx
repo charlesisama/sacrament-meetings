@@ -1,5 +1,7 @@
+
 import Link from "next/link";
 import type { SacramentMeeting } from "@/lib/types";
+import DeleteMeetingButton from "@/components/DeleteMeetingButton";
 
 interface MeetingCardProps {
     meeting: SacramentMeeting;
@@ -64,13 +66,17 @@ export default function MeetingCard({
                 </p>
             </div>
 
-            <Link
-                href={`/meetings/${meeting.id}`}
-                className="mt-6 inline-flex items-center gap-2 font-semibold text-blue-600 hover:text-blue-800"
-            >
-                View Meeting Details
-                <span aria-hidden="true">→</span>
-            </Link>
+            <div className="mt-6 flex flex-wrap items-center gap-4">
+                <Link
+                    href={`/meetings/${meeting.id}`}
+                    className="inline-flex items-center gap-2 font-semibold text-blue-600 hover:text-blue-800"
+                >
+                    View Meeting Details
+                    <span aria-hidden="true">→</span>
+                </Link>
+
+                <DeleteMeetingButton meetingId={meeting.id} />
+            </div>
         </article>
     );
 }
