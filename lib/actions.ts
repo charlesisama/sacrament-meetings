@@ -67,6 +67,21 @@ export async function createMeeting(
         await addMeetingToDatabase(result.data);
     } catch (error) {
         console.error("Create meeting error:", error);
+
+        if (
+            typeof error === "object" &&
+            error !== null &&
+            "code" in error &&
+            error.code === "23505"
+        ) {
+            return {
+                message: "A meeting already exists for this date. Please select another date.",
+                errors: {
+                    date: ["A meeting already exists for this date."],
+                },
+            };
+        }
+
         throw new Error("Unable to create the meeting. Please try again.");
     }
 
