@@ -1,5 +1,9 @@
-
 export const instant = false;
+
+import MeetingForm from "@/components/MeetingForm";
+import { updateMeeting } from "@/lib/actions";
+import { getMeetingById } from "@/lib/meetings-db";
+import { notFound } from "next/navigation";
 
 type EditMeetingPageProps = {
     params: Promise<{
@@ -12,19 +16,39 @@ export default async function EditMeetingPage({
 }: EditMeetingPageProps) {
     const { id } = await params;
 
+    const meetingId = Number(id);
+
+    if (!Number.isInteger(meetingId) || meetingId <= 0) {
+        notFound();
+    }
+
+    const meeting = await getMeetingById(meetingId);
+
+    if (!meeting) {
+        notFound();
+    }
+
+    const updateMeetingAction = updateMeeting.bind(
+        null,
+        meetingId
+    );
+
     return (
-        <section className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
-                Week 04 Feature
-            </p>
+        <div className="mx-auto max-w-4xl space-y-6">
+            <header>
+                <h1 className="text-3xl font-bold text-slate-900">
+                    Edit Meeting
+                </h1>
 
-            <h2 className="mb-3 text-2xl font-bold text-slate-900">
-                Edit Meeting
-            </h2>
+                <p className="mt-2 text-slate-600">
+                    Update the details of this sacrament meeting.
+                </p>
+            </header>
 
-            <p className="text-slate-600">
-                Editing meeting #{id} will be implemented in Week 04.
-            </p>
-        </section>
+            <MeetingForm
+                action={updateMeetingAction}
+                initialData={meeting}
+            />
+        </div>
     );
 }

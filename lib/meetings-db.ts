@@ -267,25 +267,75 @@ export async function getCurrentMeeting(): Promise<
 }
 
 
+
 export async function addMeeting(
     data: Omit<SacramentMeeting, "id">
 ): Promise<void> {
-    void data;
-    throw new Error("Adding meetings will be implemented in Week 04.");
+    await sql`
+        INSERT INTO meetings (
+            date,
+            meeting_type,
+            presiding,
+            conducting,
+            announcements,
+            opening_hymn,
+            opening_prayer,
+            ward_business,
+            stake_business,
+            sacrament_hymn,
+            speakers,
+            closing_hymn,
+            closing_prayer
+        )
+        VALUES (
+            ${data.date}::date,
+            ${data.meetingType},
+            ${data.presiding},
+            ${data.conducting},
+            string_to_array(NULLIF(${data.announcements?.join("\n") ?? ""}, ''), chr(10)),
+            ${JSON.stringify(data.openingHymn)}::jsonb,
+            ${data.openingPrayer},
+            ${JSON.stringify(data.wardBusiness)}::jsonb,
+            ${data.stakeBusiness},
+            ${JSON.stringify(data.sacramentHymn)}::jsonb,
+            ${JSON.stringify(data.speakers)}::jsonb,
+            ${JSON.stringify(data.closingHymn)}::jsonb,
+            ${data.closingPrayer}
+        )
+    `;
 }
 
 
 export async function updateMeeting(
     id: number,
-    updates: Partial<Omit<SacramentMeeting, "id">>
+    updates: Omit<SacramentMeeting, "id">
 ): Promise<void> {
-    void id;
-    void updates;
-    throw new Error("Updating meetings will be implemented in Week 04.");
+    await sql`
+        UPDATE meetings
+        SET
+            date = ${updates.date}::date,
+            meeting_type = ${updates.meetingType},
+            presiding = ${updates.presiding},
+            conducting = ${updates.conducting},
+            announcements = string_to_array(
+                NULLIF(${updates.announcements?.join("\n") ?? ""}, ''),
+                chr(10)
+            ),
+            opening_hymn = ${JSON.stringify(updates.openingHymn)}::jsonb,
+            opening_prayer = ${updates.openingPrayer},
+            ward_business = ${JSON.stringify(updates.wardBusiness)}::jsonb,
+            stake_business = ${updates.stakeBusiness},
+            sacrament_hymn = ${JSON.stringify(updates.sacramentHymn)}::jsonb,
+            speakers = ${JSON.stringify(updates.speakers)}::jsonb,
+            closing_hymn = ${JSON.stringify(updates.closingHymn)}::jsonb,
+            closing_prayer = ${updates.closingPrayer}
+        WHERE id = ${id}
+    `;
 }
 
-
 export async function deleteMeeting(id: number): Promise<void> {
-    void id;
-    throw new Error("Deleting meetings will be implemented in Week 04.");
+    await sql`
+        DELETE FROM meetings
+        WHERE id = ${id}
+    `;
 }

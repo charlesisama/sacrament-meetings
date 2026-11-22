@@ -1,18 +1,21 @@
 
+import MeetingForm from "@/components/MeetingForm";
+import { createMeeting } from "@/lib/actions";
+
 export default function NewMeetingPage() {
     return (
-        <section className="rounded-xl border border-dashed border-slate-300 bg-white p-8 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-blue-600">
-                Week 04 Feature
-            </p>
+        <div className="mx-auto max-w-4xl space-y-6">
+            <header>
+                <h1 className="text-3xl font-bold text-slate-900">
+                    Create Meeting
+                </h1>
 
-            <h2 className="mb-3 text-2xl font-bold text-slate-900">
-                Create Meeting
-            </h2>
+                <p className="mt-2 text-slate-600">
+                    Enter the details for the upcoming sacrament meeting.
+                </p>
+            </header>
 
-            <p className="text-slate-600">
-                Meeting creation functionality will be done next week (week 04).
-            </p>
-        </section>
+            <MeetingForm action={createMeeting} />
+        </div>
     );
 }
